@@ -1,0 +1,8 @@
+.env
+main.py
+labeler.py
+requirements.txt
+.python-version
+auth.log
+*.log
+*.json

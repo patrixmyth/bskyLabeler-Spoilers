@@ -58,13 +58,13 @@ function create_label() {
         -H 'accept: */*' \
         -H 'accept-language: en-US,en;q=0.9' \
         -H 'atproto-accept-labelers: did:plc:ar7c4by46qjdydhdevvrndac;redact' \
-        -H 'atproto-proxy: did:plc:e4elbtctnfqocyfcml6h2lf7#atproto_labeler' \
+        -H 'atproto-proxy: did:plc:z3yk2cflhmn6vmzo3f5ixqh4#atproto_labeler' \
         -H "authorization: Bearer $accessJwt" \
         -H 'content-type: application/json' \
-        -H 'origin: https://ozone.mountainherder.xyz' \
+        -H 'origin: https://ozone.yardcrow.com' \
         -H 'priority: u=1, i' \
-        -H 'referer: https://ozone.mountainherder.xyz/' \
-        --data-raw "{\"subject\":{\"\$type\":\"com.atproto.repo.strongRef\",\"uri\":\"$URI\",\"cid\":\"$CID\"},\"createdBy\":\"did:plc:e4elbtctnfqocyfcml6h2lf7\",\"subjectBlobCids\":[],\"event\":{\"\$type\":\"tools.ozone.moderation.defs#modEventLabel\",\"createLabelVals\":[\"$LBL\"],\"negateLabelVals\":[]}}"
+        -H 'referer: https://ozone.yardcrow.com/' \
+        --data-raw "{\"subject\":{\"\$type\":\"com.atproto.repo.strongRef\",\"uri\":\"$URI\",\"cid\":\"$CID\"},\"createdBy\":\"did:plc:z3yk2cflhmn6vmzo3f5ixqh4\",\"subjectBlobCids\":[],\"event\":{\"\$type\":\"tools.ozone.moderation.defs#modEventLabel\",\"createLabelVals\":[\"$LBL\"],\"negateLabelVals\":[]}}"
 }
 
 
@@ -74,18 +74,18 @@ function process_post() {
 
     facet=$(echo "$json" | jq '.record | has("facets")')
     if [ "$facet" = "true" ]; then
-        type=$(echo "$json" | jq '[.record.facets[].features[] | select(."$type" == "app.bsky.richtext.facet#link")] | length > 0')
+        type=$(echo "$json" | jq '[.record.facets[].features[] | select(."$type" == "app.bsky.richtext.facet#tag")] | length > 0')
         if [ "$type" = "true" ]; then
             urls=$(echo "$json" | jq -r '
                 .record.facets[]
                 | .features[]
-                | select(."$type" == "app.bsky.richtext.facet#link")
+                | select(."$type" == "app.bsky.richtext.facet#tag")
                 | .uri')
 
             # Check if any URIs match the specified domains
             found=0
             for url in $urls; do
-                if echo "$url" | grep -E 'gofundme\.com|ko-fi\.com|buymeacoffee\.com|venmo\.com|cash\.app|paypal\.com|paypal\.me' > /dev/null; then
+                if echo "$url" | grep -E 'spoiler' > /dev/null; then
                     found=1
                     echo "$json" >> flagged_posts.json
                     rkey=$(echo "$json" | jq -r '.rkey')
@@ -93,9 +93,9 @@ function process_post() {
                     link=$(echo "$json" | jq -r '"at://" + .did + "/app.bsky.feed.post/" + .rkey')
                     cid=$(get_post_record "$did" "$rkey" | jq -r '.cid')
 
-                    log "Fundraising link $url found at $link with CID $cid."
+                    log "Spoiler tag $url found at $link with CID $cid."
 
-                    echo "Fundraising link $url found at $link with CID $cid." >> flagged_post.log
+                    echo "Spoiler tag $url found at $link with CID $cid." >> flagged_post.log
 
                     if [ -z "$cid" ]; then
                         log "CID is empty, continuing."
@@ -103,7 +103,7 @@ function process_post() {
                     else
 
                     # Create a label
-                    response=$(create_label "$link" "$cid" "fundraising-link")
+                    response=$(create_label "$link" "$cid" "auto-spoiler")
                     log "Label creation response: $response"
                     echo "$response" >> log.json
                     error=$(echo "$response" | jq -r '.error')
@@ -129,7 +129,7 @@ function process_post() {
             done
 
             if [ $found -eq 0 ]; then
-                log "No fundraising links found."
+                log "No spoiler links found."
             fi
         fi
     fi

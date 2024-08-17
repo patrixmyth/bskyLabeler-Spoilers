@@ -48,7 +48,6 @@ function get_post_record() {
     curl "https://lepista.us-west.host.bsky.network/xrpc/com.atproto.repo.getRecord?repo=$DID&collection=app.bsky.feed.post&rkey=$RKEY" \
         -H 'content-type: application/json'
 
-log "get_post_record completed."
 }
 
 function create_label() {
@@ -139,7 +138,7 @@ function process_post() {
 }
 
 # Stream records and process each one
-websocat ws://localhost:6008/subscribe?wantedCollections=app.bsky.feed.post | while read -r post; do
+websocat ws://127.0.0.1:6008/subscribe?wantedCollections=app.bsky.feed.post | while read -r post; do
     process_post "$post"
     did=$(echo "$json" | jq -r '.did') >> did.json
 done

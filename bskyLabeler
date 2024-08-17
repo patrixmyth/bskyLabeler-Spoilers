@@ -20,7 +20,7 @@ log "Script started."
 
 # Fetch the access JWT
 log "Fetching access JWT."
-auth=$(curl -X POST https://blewit.us-west.host.bsky.network/xrpc/com.atproto.server.createSession \
+auth=$(curl -X POST https://lepista.us-west.host.bsky.network/xrpc/com.atproto.server.createSession \
     -H "Content-Type: application/json" \
     -d "{\"identifier\": \"$BLUESKY_HANDLE\", \"password\": \"$BLUESKY_APP_PASSWORD\"}")
 
@@ -45,7 +45,7 @@ function get_post_record() {
     DID=$1
     RKEY=$2
 
-    curl "https://blewit.us-west.host.bsky.network/xrpc/com.atproto.repo.getRecord?repo=$DID&collection=app.bsky.feed.post&rkey=$RKEY" \
+    curl "https://lepista.us-west.host.bsky.network/xrpc/com.atproto.repo.getRecord?repo=$DID&collection=app.bsky.feed.post&rkey=$RKEY" \
         -H 'content-type: application/json'
 }
 
@@ -54,10 +54,10 @@ function create_label() {
     CID=$2
     LBL=$3
 
-    curl -v 'https://blewit.us-west.host.bsky.network/xrpc/tools.ozone.moderation.emitEvent' \
+    curl -v 'https://lepista.us-west.host.bsky.network/xrpc/tools.ozone.moderation.emitEvent' \
         -H 'accept: */*' \
         -H 'accept-language: en-US,en;q=0.9' \
-        -H 'atproto-accept-labelers: did:plc:ar7c4by46qjdydhdevvrndac;redact' \
+        -H 'atproto-accept-labelers: did:plc:z3yk2cflhmn6vmzo3f5ixqh4;redact' \
         -H 'atproto-proxy: did:plc:z3yk2cflhmn6vmzo3f5ixqh4#atproto_labeler' \
         -H "authorization: Bearer $accessJwt" \
         -H 'content-type: application/json' \
@@ -112,7 +112,7 @@ function process_post() {
                         log "Token expired, refreshing tokens."
 
                         # Refresh the tokens
-                        auth=$(curl -s -X POST 'https://blewit.us-west.host.bsky.network/xrpc/com.atproto.server.refreshSession' \
+                        auth=$(curl -s -X POST 'https://lepista.us-west.host.bsky.network/xrpc/com.atproto.server.refreshSession' \
                             -H "Content-Type: application/json" \
                             -H "Authorization: Bearer $refreshJwt")
 
